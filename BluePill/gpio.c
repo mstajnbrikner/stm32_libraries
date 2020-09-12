@@ -20,17 +20,18 @@ void GPIOB_setPinLow(int pinNumber)
 
 void GPIOB_initPin_8to15_IN(int mode, int pinNumber, int pupdResistor)
 {
-	if(mode == IN)
+	RCC->APB2ENR |= GPIOB_CLOCK;
+	GPIOB->CRH &= ~(CLEAR << (4*(pinNumber-8)));
+	GPIOB->CRH |= (mode << (4*(pinNumber-8)));
+	
+	if(mode == IN_ANALOG)
 	{
-		RCC->APB2ENR |= GPIOB_CLOCK;
-		GPIOB->CRH &= ~(CLEAR << (4*(pinNumber-8)));
-		GPIOB->CRH |= (mode << (4*(pinNumber-8)));
+		RCC->APB2ENR |= ADC_CLOCK;
+		RCC->APB2ENR |= AFIO_CLOCK;
+		ADC1->CR2	|= 1;
 	}
-	else
-	{
-		RCC->APB2ENR |= GPIOB_CLOCK;
-		GPIOB->CRH &= ~(CLEAR << (4*(pinNumber-8)));
-		GPIOB->CRH |= (mode << (4*(pinNumber-8)));
+	else if(mode == IN_PUPDR)
+	{		
 		GPIOB->BSRR = pupdResistor << pinNumber;
 	}
 }
@@ -49,17 +50,17 @@ void GPIOB_initPin_0to7_OUT(int mode, int pinNumber)
 
 void GPIOB_initPin_0to7_IN(int mode, int pinNumber, int pupdResistor)
 {
-	if(mode == IN)
+	RCC->APB2ENR |= GPIOB_CLOCK;
+	GPIOB->CRL &= ~(CLEAR << (4*pinNumber));
+	GPIOB->CRL |= (mode << (4*pinNumber));
+	if(mode == IN_ANALOG)
 	{
-		RCC->APB2ENR |= GPIOB_CLOCK;
-		GPIOB->CRL &= ~(CLEAR << (4*pinNumber));
-		GPIOB->CRL |= (mode << (4*pinNumber));
+		RCC->APB2ENR |= ADC_CLOCK;
+		RCC->APB2ENR |= AFIO_CLOCK;
+		ADC1->CR2	|= 1;
 	}
-	else
-	{
-		RCC->APB2ENR |= GPIOB_CLOCK;
-		GPIOB->CRL &= ~(CLEAR << (4*pinNumber));
-		GPIOB->CRL |= (mode << (4*pinNumber));
+	else if(mode == IN_PUPDR)
+	{		
 		GPIOB->BSRR = pupdResistor << pinNumber;
 	}
 }
@@ -73,17 +74,18 @@ void GPIOA_initPin_8to15_OUT(int mode, int pinNumber)
 
 void GPIOA_initPin_8to15_IN(int mode, int pinNumber, int pupdResistor)
 {
-	if(mode == IN)
+	RCC->APB2ENR |= GPIOA_CLOCK;
+	GPIOA->CRH &= ~(CLEAR << (4*(pinNumber-8)));
+	GPIOA->CRH |= (mode << (4*(pinNumber-8)));
+	
+	if(mode == IN_ANALOG)
 	{
-		RCC->APB2ENR |= GPIOA_CLOCK;
-		GPIOA->CRH &= ~(CLEAR << (4*(pinNumber-8)));
-		GPIOA->CRH |= (mode << (4*(pinNumber-8)));
+		RCC->APB2ENR |= ADC_CLOCK;
+		RCC->APB2ENR |= AFIO_CLOCK;
+		ADC1->CR2	|= 1;
 	}
-	else
-	{
-		RCC->APB2ENR |= GPIOA_CLOCK;
-		GPIOA->CRH &= ~(CLEAR << (4*(pinNumber-8)));
-		GPIOA->CRH |= (mode << (4*(pinNumber-8)));
+	else if(mode == IN_PUPDR)
+	{		
 		GPIOA->BSRR = pupdResistor << pinNumber;
 	}
 }
@@ -97,17 +99,18 @@ void GPIOA_initPin_0to7_OUT(int mode, int pinNumber)
 
 void GPIOA_initPin_0to7_IN(int mode, int pinNumber, int pupdResistor)
 {
-	if(mode == IN)
+	RCC->APB2ENR |= GPIOA_CLOCK;
+	GPIOA->CRL &= ~(CLEAR << (4*pinNumber));
+	GPIOA->CRL |= (mode << (4*pinNumber));
+	
+	if(mode == IN_ANALOG)
 	{
-		RCC->APB2ENR |= GPIOA_CLOCK;
-		GPIOA->CRL &= ~(CLEAR << (4*pinNumber));
-		GPIOA->CRL |= (mode << (4*pinNumber));
+		RCC->APB2ENR |= ADC_CLOCK;
+		RCC->APB2ENR |= AFIO_CLOCK;
+		ADC1->CR2	|= 1;
 	}
-	else
-	{
-		RCC->APB2ENR |= GPIOA_CLOCK;
-		GPIOA->CRL &= ~(CLEAR << (4*pinNumber));
-		GPIOA->CRL |= (mode << (4*pinNumber));
+	else if(mode == IN_PUPDR)
+	{		
 		GPIOA->BSRR = pupdResistor << pinNumber;
 	}
 }
@@ -127,5 +130,20 @@ int GPIOA_digitalReadPin(int pinNumber)
 	return ((1 << pinNumber) & GPIOA->IDR) >> pinNumber;
 }
 
+int GPIOx_analogReadChannel(int channelNumber)
+{
+	ADC1->SR = 0;
+	if((ADC1->SQR3 & 0x1f) != channelNumber)
+	{
+		ADC1->SQR3 = 0;
+		ADC1->SQR3 |= channelNumber;
+	}
+	ADC1->CR2	|= 1;
+	ADC1->CR2	|= 0x400000;
+	
+	while(!(ADC1->SR & 2)) {}
+	
+	return (ADC1->DR & 0xffff);
+}
 
 
