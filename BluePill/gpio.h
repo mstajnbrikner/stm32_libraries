@@ -2,18 +2,26 @@
 #define GPIO_H
 #endif
 
-#define GPIOA_CLOCK 			4
-#define GPIOB_CLOCK				8
-#define ADC_CLOCK				0x200
-#define AFIO_CLOCK				1
-#define OUT_PP					0x00000001
-#define OUT_OD					0x00000005
-#define IN						0x00000004
-#define IN_PUPDR				0x00000008
-#define IN_ANALOG				0
-#define PULLUP					1
-#define PULLDOWN				(1 << 16)
-#define CLEAR					0x0000000f
+#define GPIOA_CLOCK 		4
+#define GPIOB_CLOCK			8
+#define ADC_CLOCK			0x200
+#define AFIO_CLOCK			1
+#define TIM3_CLOCK			2
+#define TIM4_CLOCK			4
+#define TIM2_CLOCK			1
+#define TIM1_CLOCK			0x800
+#define OUT_PP				0x00000001
+#define OUT_PWM_PP			0x00000009
+#define OUT_OD				0x00000005
+#define IN					0x00000004
+#define IN_PUPDR			0x00000008
+#define IN_ANALOG			0
+#define PULLUP				1
+#define PULLDOWN			(1 << 16)
+#define CLEAR				0x0000000f
+
+
+
 
 //Don't use pins PA15, PB3, PB4 - control pins
 
@@ -38,5 +46,9 @@ int GPIOB_digitalReadPin(int pinNumber);
 int GPIOA_digitalReadPin(int pinNumber);
 
 int GPIOx_analogReadChannel(int channelNumber);
+
+void GPIOA_analogWritePin(int pinNumber, int pwm);
+
+void GPIOB_analogWritePin(int pinNumber, int pwm);
 
 
