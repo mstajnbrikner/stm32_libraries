@@ -4,22 +4,20 @@
 
 extern struct lcdMiscData lcdMiscelData;
 
-void I2C_start()
+void I2C_start(void)
 {
 	I2C1->CR1 |= (1 << 8);			//start
 	while(!(I2C1->SR1 & 1)) 
 	{
-	}
-	//lcdMiscelData.tempReceive = I2C1->SR1;
+	}	
 	
 	I2C1->DR = (0x27 << 1);		//slave address 0x27
 	while(!(I2C1->SR1 & 2))
 	{
-	}
-	//lcdMiscelData.tempReceive = I2C1->SR1;
+	}	
 	lcdMiscelData.tempReceive = I2C1->SR2;
 }
-void I2C_stop()
+void I2C_stop(void)
 {
 	I2C1->CR1 |= (1 << 9); 		//stop
 }
@@ -34,7 +32,7 @@ void I2C_sendByte(int data, int us)
 void I2C_sendCommand(int mode, char lNibble, char uNibble)
 {
 	int temp1, temp2;
-	if(mode == MODE_WRITECHAR)
+	if(mode == MODE_writeChar)
 	{
 		temp1 = 5;
 		temp2 = 1;
@@ -73,7 +71,7 @@ void I2C_sendCommand(int mode, char lNibble, char uNibble)
 	
 }
 
-void backlightOn()
+void LCD_backlightOn(void)
 {
 	I2C_start();
 	
@@ -83,7 +81,7 @@ void backlightOn()
 	I2C_stop();
 }
 
-void backlightOff()
+void LCD_backlightOff(void)
 {
 	I2C_start();
 	
@@ -93,28 +91,28 @@ void backlightOff()
 	I2C_stop();
 }
 
-void writeChar(char ch)
+void LCD_writeChar(char ch)
 {
 	char upperNibble = (ch & 0xf0) >> 4;
 	char lowerNibble = (ch & 0x0f);
 	
 	I2C_start();
 	
-	I2C_sendCommand(MODE_WRITECHAR, lowerNibble, upperNibble);
+	I2C_sendCommand(MODE_LCD_writeChar, lowerNibble, upperNibble);
 	
 	I2C_stop();
 }
 
-void writeString(char* text)
+void LCD_writeString(char* text)
 {
 	while((*text) != '\0')
 	{
-		writeChar(*text);
+		LCD_writeChar(*text);
 		text++;
 	}
 }
 
-void setCursor(int row, int column)
+void LCD_setCursor(int row, int column)
 {
 	int address = 0;
 	
@@ -139,7 +137,7 @@ void setCursor(int row, int column)
 	I2C_stop();
 }
 
-void lcdInit()
+void LCD_init(void)
 {
 	//Basic GPIO and I2C setup
 	RCC->APB2ENR |= 8;					
@@ -214,4 +212,29 @@ void lcdInit()
 	
 	I2C_stop();
 }
+
+void LCD_clearDisplay(void)
+{
+	I2C_start();
+	
+	I2C_sendCommand(MODE_COMMAND, 0x01, 0x00);
+	delayMs(2);
+	
+	I2C_stop();
+}
+
+void LCD_setDisplayProperties(char displayState, char cursorState, char blinkingCursorState)
+{
+	I2C_start();
+	
+	I2C_sendCommand(MODE_COMMAND, 0x08 | displayState | cursorState | blinkingCursorState, 0x00);
+	
+	I2C_stop();
+}
+
+
+
+
+
+
 
